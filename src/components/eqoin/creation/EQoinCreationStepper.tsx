@@ -4,9 +4,8 @@ import { MilestoneSelector } from './MilestoneSelector';
 import { PayoutScheduler } from './PayoutScheduler';
 import { TokenCustomizer } from './TokenCustomizer';
 import { ComplianceCheck } from './ComplianceCheck';
-import { SuccessModal } from './SuccessModal';
+import { Star, Sparkles, PartyPopper, Trophy } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { motion } from 'framer-motion';
 
 interface EQoinCreationStepperProps {
   onComplete: (data: any) => void;
@@ -14,188 +13,152 @@ interface EQoinCreationStepperProps {
 
 export const EQoinCreationStepper: FC<EQoinCreationStepperProps> = ({ onComplete }) => {
   const [step, setStep] = useState(1);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [successModalData, setSuccessModalData] = useState<any>(null);
-  const [isNextEnabled, setIsNextEnabled] = useState(false);
   const [data, setData] = useState({
     milestones: [],
     schedules: [],
     customization: {
-      tokenName: '',
-      tokenSymbol: '',
       supply: 1000000,
       value: 1.00,
       primaryColor: '#0000FF',
-      secondaryColor: '#4040FF',
-      purpose: '',
-      distributionModel: ''
+      secondaryColor: '#4040FF'
     },
     complianceIssues: []
   });
+  const [isNextEnabled, setIsNextEnabled] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
 
-  // Validate current step
+  // Validate current step data
   useEffect(() => {
-    validateCurrentStep();
-  }, [step, data]);
-
-  const validateCurrentStep = () => {
-    let isValid = false;
-    
-    switch (step) {
-      case 1:
-        isValid = Boolean(
-          data.customization.tokenName &&
-          data.customization.tokenSymbol &&
-          data.customization.purpose &&
-          data.customization.distributionModel
-        );
-        break;
-      case 2:
-        isValid = data.milestones.length > 0;
-        break;
-      case 3:
-        isValid = data.schedules.length > 0;
-        break;
-      case 4:
-        isValid = data.complianceIssues.length === 0;
-        break;
-    }
-
-    setIsNextEnabled(isValid);
-  };
-
-  const triggerConfetti = () => {
-    const count = 200;
-    const defaults = {
-      origin: { y: 0.7 },
-      zIndex: 9999
-    };
-
-    function fire(particleRatio: number, opts: any) {
-      confetti({
-        ...defaults,
-        ...opts,
-        particleCount: Math.floor(count * particleRatio)
-      });
-    }
-
-    fire(0.25, {
-      spread: 26,
-      startVelocity: 55,
-    });
-
-    fire(0.2, {
-      spread: 60,
-    });
-
-    fire(0.35, {
-      spread: 100,
-      decay: 0.91,
-      scalar: 0.8
-    });
-
-    fire(0.1, {
-      spread: 120,
-      startVelocity: 25,
-      decay: 0.92,
-      scalar: 1.2
-    });
-
-    fire(0.1, {
-      spread: 120,
-      startVelocity: 45,
-    });
-  };
-
-  const nextStep = () => {
-    if (!isNextEnabled) return;
-    setStep(prev => Math.min(prev + 1, 4));
-  };
-
-  const prevStep = () => {
-    setStep(prev => Math.max(prev - 1, 1));
-  };
-
-  const handleComplete = async () => {
-    if (!isNextEnabled) return;
-
-    // Prepare success data
-    const successData = {
-      tokenName: data.customization.tokenName,
-      purpose: data.customization.purpose,
-      distributionModel: data.customization.distributionModel,
-      supply: data.customization.supply,
-      value: data.customization.value,
-      milestones: data.milestones,
-      payoutConfig: {
-        type: data.schedules[0]?.type || 'One-time',
-        schedule: data.schedules[0]?.schedule
+    const validateStep = () => {
+      switch (step) {
+        case 1:
+          setIsNextEnabled(
+            data.customization.supply > 0 &&
+            data.customization.value > 0 &&
+            data.customization.primaryColor &&
+            data.customization.secondaryColor
+          );
+          break;
+        case 2:
+          setIsNextEnabled(data.milestones.length > 0);
+          break;
+        case 3:
+          setIsNextEnabled(data.schedules.length > 0);
+          break;
+        case 4:
+          setIsNextEnabled(data.complianceIssues.length === 0);
+          break;
+        default:
+          setIsNextEnabled(true);
       }
     };
+    validateStep();
+  }, [step, data]);
 
-    // Trigger success animations
-    triggerConfetti();
-    setSuccessModalData(successData);
-    setShowSuccessModal(true);
+  const nextStep = () => {
+    if (isNextEnabled) {
+      // Trigger button animation
+      const button = document.getElementById('next-button');
+      if (button) {
+        button.classList.add('scale-110');
+        setTimeout(() => button.classList.remove('scale-110'), 200);
+      }
 
-    // Complete the process
+      // Progress celebration
+      if (step < 4) {
+        const progressIndicator = document.querySelector(`.step-${step + 1}`);
+        if (progressIndicator) {
+          progressIndicator.classList.add('animate-bounce');
+          setTimeout(() => progressIndicator.classList.remove('animate-bounce'), 1000);
+        }
+      }
+
+      setStep(prev => Math.min(prev + 1, 4));
+    }
+  };
+
+  const prevStep = () => setStep(prev => Math.max(prev - 1, 1));
+
+  const handleComplete = () => {
+    setShowCelebration(true);
+    
+    // Trigger confetti animation
+    const duration = 3000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+    function randomInRange(min: number, max: number) {
+      return Math.random() * (max - min) + min;
+    }
+
+    const interval: any = setInterval(function() {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
+      }
+
+      const particleCount = 50 * (timeLeft / duration);
+
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+      });
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+      });
+    }, 250);
+
+    // Show success message and complete
     setTimeout(() => {
       onComplete(data);
     }, 2000);
   };
 
   return (
-    <Card className="max-w-4xl mx-auto">
+    <Card className="max-w-4xl mx-auto relative overflow-hidden">
       {/* Progress Steps */}
       <div className="flex justify-between mb-8 relative">
-        {/* Progress bar background */}
-        <div className="absolute top-1/2 left-0 right-0 h-1 bg-gray-200 -translate-y-1/2" />
-        
-        {/* Animated progress bar */}
-        <div 
-          className="absolute top-1/2 left-0 h-1 bg-[#0000FF] -translate-y-1/2 transition-all duration-500"
-          style={{ width: `${((step - 1) / 3) * 100}%` }}
-        />
-
         {[1, 2, 3, 4].map(number => (
-          <motion.div 
-            key={number}
-            className="relative z-10"
-            initial={false}
-            animate={{
-              scale: step === number ? 1.1 : 1,
-            }}
-            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-          >
+          <div key={number} className="flex items-center relative">
             <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
-                step >= number 
+              className={`
+                step-${number} w-12 h-12 rounded-full flex items-center justify-center
+                transition-all duration-500 relative
+                ${step >= number 
                   ? 'bg-[#0000FF] text-white' 
                   : 'bg-gray-200 text-gray-400'
-              }`}
+                }
+                ${step === number && 'ring-4 ring-[#0000FF]/20'}
+              `}
             >
-              {number}
+              {step > number ? (
+                <Trophy className="w-6 h-6 animate-pulse" />
+              ) : (
+                <span className="text-lg font-bold">{number}</span>
+              )}
+              
+              {/* Animated glow effect */}
+              {step === number && (
+                <div className="absolute inset-0 rounded-full bg-[#0000FF]/20 animate-ping" />
+              )}
             </div>
-            {step === number && (
-              <motion.div
-                className="absolute inset-0 rounded-full border-2 border-[#0000FF]"
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1.2, opacity: 0 }}
-                transition={{ duration: 1, repeat: Infinity }}
+            {number < 4 && (
+              <div
+                className={`
+                  h-1 w-16 mx-2 transition-all duration-500
+                  ${step > number ? 'bg-[#0000FF]' : 'bg-gray-200'}
+                `}
               />
             )}
-          </motion.div>
+          </div>
         ))}
       </div>
 
-      {/* Step Content */}
-      <motion.div 
-        key={step}
-        initial={{ x: 20, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        exit={{ x: -20, opacity: 0 }}
-        className="mb-8"
-      >
+      <div className="mb-8">
         {step === 1 && (
           <TokenCustomizer
             customization={data.customization}
@@ -257,42 +220,73 @@ export const EQoinCreationStepper: FC<EQoinCreationStepperProps> = ({ onComplete
             }
           />
         )}
-      </motion.div>
-
-      {/* Navigation Buttons */}
-      <div className="flex justify-between">
-        {step > 1 && (
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={prevStep}
-            className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-          >
-            Back
-          </motion.button>
-        )}
-        
-        <motion.button
-          whileHover={{ scale: isNextEnabled ? 1.02 : 1 }}
-          whileTap={{ scale: isNextEnabled ? 0.98 : 1 }}
-          onClick={step < 4 ? nextStep : handleComplete}
-          disabled={!isNextEnabled}
-          className={`px-6 py-2 rounded-lg ml-auto transition-all duration-300 ${
-            isNextEnabled
-              ? 'bg-[#0000FF] text-white hover:bg-[#0000CC] cursor-pointer'
-              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-          }`}
-        >
-          {step < 4 ? 'Next' : 'Create EquityQoin'}
-        </motion.button>
       </div>
 
-      {/* Success Modal */}
-      <SuccessModal
-        isOpen={showSuccessModal}
-        onClose={() => setShowSuccessModal(false)}
-        data={successModalData}
-      />
+      <div className="flex justify-between">
+        {step > 1 && (
+          <button
+            onClick={prevStep}
+            className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-300"
+          >
+            Back
+          </button>
+        )}
+        
+        {step < 4 ? (
+          <button
+            id="next-button"
+            onClick={nextStep}
+            disabled={!isNextEnabled}
+            className={`
+              px-6 py-2 rounded-lg ml-auto
+              transition-all duration-300 transform
+              flex items-center gap-2
+              ${isNextEnabled
+                ? 'bg-[#0000FF] text-white hover:bg-[#0000CC] hover:scale-105'
+                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              }
+            `}
+          >
+            Next
+            {isNextEnabled && <Sparkles className="w-5 h-5 animate-pulse" />}
+          </button>
+        ) : (
+          <button
+            onClick={handleComplete}
+            disabled={!isNextEnabled}
+            className={`
+              px-6 py-2 rounded-lg ml-auto
+              transition-all duration-300 transform
+              flex items-center gap-2
+              ${isNextEnabled
+                ? 'bg-green-500 text-white hover:bg-green-600 hover:scale-105'
+                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              }
+              ${showCelebration && 'animate-bounce'}
+            `}
+          >
+            {showCelebration ? (
+              <>
+                <PartyPopper className="w-5 h-5" />
+                Success!
+              </>
+            ) : (
+              <>
+                <Star className="w-5 h-5" />
+                Create EquityQoin
+              </>
+            )}
+          </button>
+        )}
+      </div>
+
+      {/* Progress indicator */}
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200">
+        <div
+          className="h-full bg-[#0000FF] transition-all duration-500"
+          style={{ width: `${(step / 4) * 100}%` }}
+        />
+      </div>
     </Card>
   );
 };
