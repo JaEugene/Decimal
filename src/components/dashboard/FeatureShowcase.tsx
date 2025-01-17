@@ -7,14 +7,14 @@ const features = [
     title: 'Smart Performance Tracking',
     description: 'Monitor your E-Qoin performance with real-time analytics and insights. Our advanced tracking system helps you understand market trends, investor sentiment, and growth opportunities.',
     icon: ChartLineUp,
-    image: '/src/components/dashboard/Performance Tracking.png',
+    image: '/src/pages/Performance Tracking.png',
     imageAlt: 'Analytics dashboard showing performance metrics'
   },
   {
     title: 'Seamless Token Creation',
     description: 'Create and customize your E-Qoins with our intuitive token creation system. Set supply, define milestones, and establish payout schedules all in one place.',
     icon: Coins,
-    image: '/src/components/dashboard/Smart Qoin Creation.png',
+    image: '/src/pages/Smart Qoin Creation.png',
     imageAlt: 'Token creation interface showing customization options',
     reverse: true
   },
@@ -22,14 +22,14 @@ const features = [
     title: 'Compliance Made Simple',
     description: 'Stay compliant with our built-in regulatory checks and balances. Our system automatically validates your actions against current NIL regulations and guidelines.',
     icon: Shield,
-    image: '/src/components/dashboard/Complaince Made Simple.png',
+    image: '/src/pages/Complaince Made Simple.png',
     imageAlt: 'Compliance dashboard interface'
   },
   {
     title: 'Community Engagement',
     description: 'Connect with investors and supporters through our integrated community features. Share updates, track engagement, and build lasting relationships with your stakeholder network.',
     icon: Users,
-    image: '/src/components/dashboard/Community Engagement.png',
+    image: '/src/pages/Community Engagement.png',
     imageAlt: 'Community engagement platform',
     reverse: true
   }
@@ -65,11 +65,11 @@ export const FeatureShowcase: FC = () => {
                 <div className="relative group">
                   <div className="absolute -inset-4 bg-gradient-to-r from-[#4169E1]/20 to-[#4169E1]/0 rounded-xl blur-xl transition-all duration-500 group-hover:inset-0 group-hover:blur-2xl" />
                   <div className="relative">
-                    <Card className="overflow-hidden">
+                    <Card className="overflow-hidden transform transition-all duration-500 group-hover:scale-[1.02]">
                       <img
                         src={feature.image}
                         alt={feature.imageAlt}
-                        className="w-full h-[300px] object-cover rounded-lg transform group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-[300px] object-cover rounded-lg transform group-hover:scale-105 transition-transform duration-500 hover:shadow-lg"
                       />
                     </Card>
                   </div>
